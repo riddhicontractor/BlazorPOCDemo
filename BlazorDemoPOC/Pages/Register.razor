@@ -1,0 +1,191 @@
+﻿@page "/register"
+@using BlazorDemoPOC.Data
+@inherits OwningComponentBase<UserService>
+@inject UserService objUserService
+@using Blazored.Toast
+@using Blazored.Toast.Services
+@inject IToastService toastService
+@using Blazored.Toast.Configuration
+
+<BlazoredToasts Position="ToastPosition.TopRight"
+                Timeout="2">
+    <CloseButtonContent>
+        <div>
+            <span>&times;</span>
+        </div>
+    </CloseButtonContent>
+</BlazoredToasts>
+
+<EditForm Model="@objuser" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <center>
+                                    <h4>
+                                        <img class="card-img-top imageThumbnail" src="icons/user.png" />
+                                        <b>User Registration</b>
+                                    </h4>
+                                </center>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <hr>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <label for="FirstName" class="form-label font-weight-bold"><b>First Name :</b></label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" id="firstname" type="text" @bind="@objuser.FirstName" maxlength="10" />
+                            </div>
+                            <div class="col-md-3"> <ValidationMessage For="@(() => objuser.FirstName)" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <label for="LastName" class="form-label font-weight-bold"><b>Last Name :</b></label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" id="lastname" type="text" @bind="@objuser.LastName" maxlength="10" />
+                            </div>
+                            <div class="col-md-3">
+                                <ValidationMessage For="@(() => objuser.LastName)" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <label for="Gender" class="form-label font-weight-bold"><b>Gender :</b></label>
+                            </div>
+                            <div class="col-md-6">
+                                
+                            </div>
+                            <div class="col-md-3">
+                                <ValidationMessage For="@(() => objuser.Gender)" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <label for="Department" class="form-label font-weight-bold"><b>Department :</b></label>
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-control" @bind="@objuser.Department">
+                                    <option value=""></option>
+                                    <option value="Computer Engineering">Computer Engineering</option>
+                                    <option value="Civil Engineering">Civil Engineering</option>
+                                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                    <option value="Electrical Engineering">Electrical Engineering</option>
+                                    <option value="Information and Technology">Information and Technology</option>
+                                    <option value="Electronics and Communication">Electronics and Communication</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <ValidationMessage For="@(() => objuser.Department)" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <label for="Username" class="form-label font-weight-bold"><b>Username :</b></label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" id="username" type="text" @bind="@objuser.Username" />
+                            </div>
+                            <div class="col-md-3">
+                                <ValidationMessage For="@(() => objuser.Username)" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <label for="Password" class="form-label font-weight-bold"><b>Password :</b></label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" id="password" type="password" @bind="@objuser.Password" />
+                            </div>
+                            <div class="col-md-3">
+                                <ValidationMessage For="@(() => objuser.Password)" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 text-right">
+                                <input id="Submit1" class="btn btn-block btn-success" type="submit" value="Register" />
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <input id="Button1" class="btn btn-block btn-warning" type="button" value="Reset" @onclick="Reset" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    List<UserInfo> users;
+
+    UserInfo objuser = new UserInfo();
+
+    protected override void OnInitialized()
+    {
+        users = Service.GetUser();
+    }
+    List<string> genderOption = new List<string> { "Male", "Female" };
+
+    private void HandleValidSubmit()
+    {
+        try
+        {
+            if (objuser.FirstName == null || objuser.LastName == null || objuser.Gender == null || objuser.Department == null || objuser.Username == null || objuser.Password == null)
+            {
+                toastService.ShowError("All fields are mandatory!");
+            }
+            else
+            {
+                RegisterUser();
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError(ex.Message, "Failed!");
+        }
+    }
+
+    void RegisterUser()
+    {
+        try
+        {
+            objuser.UserId = 0;
+            Service.Create(objuser);
+            users = Service.GetUser();
+            toastService.ShowSuccess("User Registered Successfully!", "Congratulations!");
+            Reset();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError(ex.Message, "Failed!");
+        }
+    }
+
+    void Reset()
+    {
+        try
+        {
+            objuser.FirstName = string.Empty;
+            objuser.LastName = string.Empty;
+            objuser.Gender = string.Empty;
+            objuser.Department = string.Empty;
+            objuser.Username = string.Empty;
+            objuser.Password = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError(ex.Message, "Failed!");
+        }
+    }
+}

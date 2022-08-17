@@ -1,0 +1,107 @@
+﻿@page "/login"
+@using BlazorDemoPOC.Data
+@inherits OwningComponentBase<UserService>
+@inject UserService objUserService
+@using Blazored.Toast
+@using Blazored.Toast.Services
+@inject IToastService toastService
+@using Blazored.Toast.Configuration
+@inject NavigationManager NavigationManager
+
+<EditForm Model="@objuser" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <center>
+                                    <img class="card-img-top imageThumbnail2" src="icons/user-login.jpg" />
+                                </center>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <center>
+                                    <h3><b>User Login</b></h3>
+                                </center>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <hr>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <label for="username" class="form-label font-weight-bold"><b>Username :</b></label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" id="username" type="text" @bind="@objuser.Username" />
+                            </div>
+                            <div class="col-md-3">
+                                <ValidationMessage For="@(() => objuser.Username)" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-3">
+                                <label for="password" class="form-label font-weight-bold"><b>Password :</b></label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" id="password" type="password" @bind="@objuser.Password" />
+                            </div>
+                            <div class="col-md-3">
+                                <ValidationMessage For="@(() => objuser.Password)" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 text-center">
+                                <input id="Submit1" class="btn btn-block btn-info" type="submit" value="Login" />
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <input class="btn btn-block btn-success" id="Button1" type="button" value="Register" @onclick="GoToRegister"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    List<UserInfo> users;
+
+    UserInfo objuser = new UserInfo();
+
+    protected override void OnInitialized()
+    {
+        users = Service.GetUser();
+    }
+
+    void GoToRegister()
+    {
+        NavigationManager.NavigateTo("/register");
+    }
+
+    private void HandleValidSubmit()
+    {
+        try
+        {
+            if (objuser.Username == null || objuser.Password == null)
+            {
+                toastService.ShowError("All fields are mandatory!");
+            }
+            else
+            {
+
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError(ex.Message, "Failed!");
+        }
+    }
+}
