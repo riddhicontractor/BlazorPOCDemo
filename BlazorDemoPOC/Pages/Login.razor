@@ -113,8 +113,8 @@
                 isLoginSuccess = objUserService.UserLogin(objuser);
                 if (isLoginSuccess)
                 {
-                    NavigationManager.NavigateTo($"/index/{objuser.Username}");
-                    toastService.ShowSuccess("Login success");
+                    NavigationManager.NavigateTo($"/hellouserpage/{objuser.Username}");
+                    toastService.ShowSuccess("Login Success!");
                 }
                 else
                 {

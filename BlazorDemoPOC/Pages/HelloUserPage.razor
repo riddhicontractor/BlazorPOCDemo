@@ -1,0 +1,14 @@
+﻿@page "/hellouserpage/{username}"
+
+<h1>Hello, @User!</h1>
+
+@code{
+    public string User { get; set; }
+    protected override void OnParametersSet()
+    {
+        //the param will be set now
+        User = UserName;
+    }
+    [Parameter]
+    public string UserName { get; set; }
+}

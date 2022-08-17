@@ -32,7 +32,7 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <button type="button" class="btn btn-info" @onclick="GoToRegister">Add New User</button>
+                    <button type="button" class="btn btn-info" @onclick="AddNewUSer">Add New User</button>
                 </div>
             </div>
             <h1></h1>
@@ -89,9 +89,9 @@
         NavigationManager.NavigateTo($"/edituserinfo/{u.UserId}");
     }
 
-    void GoToRegister()
+    void AddNewUSer()
     {
-        NavigationManager.NavigateTo("/register");
+        NavigationManager.NavigateTo("/addnewuser");
     }
 
     void DeleteUser(UserInfo u)
