@@ -1,0 +1,111 @@
+﻿@page "/viewusers"
+@using BlazorDemoPOC.Data
+@inherits OwningComponentBase<UserService>
+@inject UserService objUserService
+@using Blazored.Toast
+@using Blazored.Toast.Services
+@inject IToastService toastService
+@using Blazored.Toast.Configuration
+@inject NavigationManager NavigationManager
+
+<BlazoredToasts Position="ToastPosition.TopRight"
+                Timeout="5">
+    <CloseButtonContent>
+        <div>
+            <span>&times;</span>
+        </div>
+    </CloseButtonContent>
+</BlazoredToasts>
+
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <center>
+                        <h4>
+                            <img class="card-img-top imageThumbnail" src="icons/viewusers.png" />
+                            <b>User List</b>
+                        </h4>
+                    </center>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <button type="button" class="btn btn-info" @onclick="GoToRegister">Add New User</button>
+                </div>
+            </div>
+            <h1></h1>
+            <div class="row">
+                <div class="col-12">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col"><center>User Id</center></th>
+                                <th scope="col"><center>First Name</center></th>
+                                <th scope="col"><center>Last Name</center></th>
+                                <th scope="col"><center>Gender</center></th>
+                                <th scope="col"><center>Department</center></th>
+                                <th scope="col"><center>Action</center></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in users)
+                            {
+                                <tr>
+                                    <th scope="row"> <center>@user.UserId</center></th>
+                                    <td><center>@user.FirstName</center></td>
+                                    <td><center>@user.LastName</center></td>
+                                    <td><center>@user.Gender</center></td>
+                                    <td><center>@user.Department</center></td>
+                                    <td>
+                                        <center>
+                                            <button type="button" class="btn btn-success" @onclick="()=>EditUser(user)">Edit</button>
+                                            <button type="button" class="btn btn-danger" @onclick="()=>DeleteUser(user)">Delete</button>
+                                        </center>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    List<UserInfo> users;
+
+    UserInfo objuser = new UserInfo();
+
+    protected override void OnInitialized()
+    {
+        users = Service.GetUser();
+    }
+
+    void EditUser(UserInfo u)
+    {
+        NavigationManager.NavigateTo($"/edituserinfo/{u.UserId}");
+    }
+
+    void GoToRegister()
+    {
+        NavigationManager.NavigateTo("/register");
+    }
+
+    void DeleteUser(UserInfo u)
+    {
+        try
+        {
+            objuser.UserId = u.UserId;
+            Service.Delete(objuser);
+            users = Service.GetUser();
+            toastService.ShowSuccess("User Deleted Successfully!");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError(ex.Message, "Failed!");
+        }
+    }
+}

@@ -1,7 +1,14 @@
-﻿@page "/"
+﻿@page "/index/{username}"
 
-<h1>Hello, world!</h1>
+<h1>Hello, @User!</h1>
 
-Welcome to your new app.
-
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code{
+    public string User { get; set; }
+    protected override void OnParametersSet()
+    {
+        //the param will be set now
+        User = UserName;
+    }
+    [Parameter]
+    public string UserName { get; set; }
+}

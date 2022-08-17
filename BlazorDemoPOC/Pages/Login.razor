@@ -1,14 +1,26 @@
 ﻿@page "/login"
-@using BlazorDemoPOC.Data
 @inherits OwningComponentBase<UserService>
-@inject UserService objUserService
+@using BlazorDemoPOC.Data
 @using Blazored.Toast
 @using Blazored.Toast.Services
-@inject IToastService toastService
 @using Blazored.Toast.Configuration
+@inject IToastService toastService
+@inject UserService objUserService
 @inject NavigationManager NavigationManager
+@inject IToastService toastService
 
-<EditForm Model="@objuser" OnValidSubmit="HandleValidSubmit">
+
+<BlazoredToasts Position="ToastPosition.TopRight"
+                Timeout="2">
+    <CloseButtonContent>
+        <div>
+            <span>&times;</span>
+        </div>
+    </CloseButtonContent>
+</BlazoredToasts>
+
+
+<EditForm Model="@objuser" OnValidSubmit="LoginUser">
     <DataAnnotationsValidator />
     <div class="container">
         <div class="row">
@@ -58,10 +70,10 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6 text-center">
-                                <input id="Submit1" class="btn btn-block btn-info" type="submit" value="Login" />
+                                <input id="btn_Login" class="btn btn-block btn-info" type="submit" value="Login" @onclick="LoginUser" />
                             </div>
                             <div class="col-md-6 text-center">
-                                <input class="btn btn-block btn-success" id="Button1" type="button" value="Register" @onclick="GoToRegister"/>
+                                <input class="btn btn-block btn-success" id="btn_Register" type="button" value="Register" @onclick="GoToRegister" />
                             </div>
                         </div>
                     </div>
@@ -78,7 +90,7 @@
 
     protected override void OnInitialized()
     {
-        users = Service.GetUser();
+        //users = Service.GetUser();
     }
 
     void GoToRegister()
@@ -86,8 +98,9 @@
         NavigationManager.NavigateTo("/register");
     }
 
-    private void HandleValidSubmit()
+    private void LoginUser()
     {
+        bool isLoginSuccess = false;
         try
         {
             if (objuser.Username == null || objuser.Password == null)
@@ -97,6 +110,16 @@
             else
             {
 
+                isLoginSuccess = objUserService.UserLogin(objuser);
+                if (isLoginSuccess)
+                {
+                    NavigationManager.NavigateTo($"/index/{objuser.Username}");
+                    toastService.ShowSuccess("Login success");
+                }
+                else
+                {
+                    toastService.ShowError("Invalid Crendentials!");
+                }
             }
         }
         catch (Exception ex)

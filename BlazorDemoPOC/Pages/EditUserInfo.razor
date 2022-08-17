@@ -1,4 +1,4 @@
-﻿@page "/register"
+﻿@page "/edituserinfo/{UserId}"
 @using BlazorDemoPOC.Data
 @inherits OwningComponentBase<UserService>
 @inject UserService objUserService
@@ -6,9 +6,10 @@
 @using Blazored.Toast.Services
 @inject IToastService toastService
 @using Blazored.Toast.Configuration
+@inject NavigationManager NavigationManager
 
 <BlazoredToasts Position="ToastPosition.TopRight"
-                Timeout="2">
+                Timeout="5">
     <CloseButtonContent>
         <div>
             <span>&times;</span>
@@ -28,7 +29,7 @@
                                 <center>
                                     <h4>
                                         <img class="card-img-top imageThumbnail" src="icons/user.png" />
-                                        <b>User Registration</b>
+                                        <b>Update User Details</b>
                                     </h4>
                                 </center>
                             </div>
@@ -43,9 +44,10 @@
                                 <label for="FirstName" class="form-label font-weight-bold"><b>First Name :</b></label>
                             </div>
                             <div class="col-md-6">
-                                <input class="form-control" id="firstname" type="text" @bind="@objuser.FirstName" maxlength="10" />
+                                <input class="form-control" id="firstname" type="text" @bind="@user.FirstName" maxlength="10" />
                             </div>
-                            <div class="col-md-3"> <ValidationMessage For="@(() => objuser.FirstName)" />
+                            <div class="col-md-3">
+                                <ValidationMessage For="@(() => objuser.FirstName)" />
                             </div>
                         </div>
                         <div class="form-group row">
@@ -53,7 +55,7 @@
                                 <label for="LastName" class="form-label font-weight-bold"><b>Last Name :</b></label>
                             </div>
                             <div class="col-md-6">
-                                <input class="form-control" id="lastname" type="text" @bind="@objuser.LastName" maxlength="10" />
+                                <input class="form-control" id="lastname" type="text" @bind="@user.LastName" maxlength="10" />
                             </div>
                             <div class="col-md-3">
                                 <ValidationMessage For="@(() => objuser.LastName)" />
@@ -64,7 +66,7 @@
                                 <label for="Gender" class="form-label font-weight-bold"><b>Gender :</b></label>
                             </div>
                             <div class="col-md-6">
-                                <select class="form-control" @bind="@objuser.Gender">
+                                <select @bind="@user.Gender" class="form-control" >
                                     <option value=""></option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
@@ -79,7 +81,7 @@
                                 <label for="Department" class="form-label font-weight-bold"><b>Department :</b></label>
                             </div>
                             <div class="col-md-6">
-                                <select class="form-control" @bind="@objuser.Department">
+                                <select @bind="@user.Department" class="form-control">
                                     <option value=""></option>
                                     <option value="Computer Engineering">Computer Engineering</option>
                                     <option value="Civil Engineering">Civil Engineering</option>
@@ -98,7 +100,7 @@
                                 <label for="Username" class="form-label font-weight-bold"><b>Username :</b></label>
                             </div>
                             <div class="col-md-6">
-                                <input class="form-control" id="username" type="text" @bind="@objuser.Username" />
+                                <input class="form-control" id="username" type="text" @bind="@user.Username" />
                             </div>
                             <div class="col-md-3">
                                 <ValidationMessage For="@(() => objuser.Username)" />
@@ -109,18 +111,18 @@
                                 <label for="Password" class="form-label font-weight-bold"><b>Password :</b></label>
                             </div>
                             <div class="col-md-6">
-                                <input class="form-control" id="password" type="password" @bind="@objuser.Password" />
+                                <input class="form-control" id="password" type="password" @bind="@user.Password" />
                             </div>
                             <div class="col-md-3">
                                 <ValidationMessage For="@(() => objuser.Password)" />
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 text-right">
-                                <input id="Submit1" class="btn btn-block btn-success" type="submit" value="Register" />
+                            <div class="col-md-6 text-right">@*@onclick="()=>EditUser(user)"*@
+                                <input id="Submit1" class="btn btn-block btn-success" type="submit" value="Update" @onclick="HandleValidSubmit"  />
                             </div>
                             <div class="col-md-6 text-right">
-                                <input id="Button1" class="btn btn-block btn-warning" type="button" value="Reset" @onclick="Reset" />
+                                <input id="Button1" class="btn btn-block btn-warning" type="button" value="Cancel" @onclick="BackToViewUser" />
                             </div>
                         </div>
                     </div>
@@ -131,26 +133,61 @@
 </EditForm>
 
 @code {
+
     List<UserInfo> users;
+
+    UserInfo user;
 
     UserInfo objuser = new UserInfo();
 
-    protected override void OnInitialized()
+    [Parameter]
+    public string Id { get; set; }
+    [Parameter]
+    public string UserId { get; set; }
+
+    protected override void OnParametersSet()
     {
-        users = Service.GetUser();
+        //the param will be set now
+        Id = UserId;
     }
 
-    private void HandleValidSubmit()
+    protected override void OnInitialized()
+    {
+        Id = UserId;
+        user = Service.GetUser(Id);
+    }
+
+    void BackToViewUser()
+    {
+        NavigationManager.NavigateTo("/viewusers");
+    }
+
+    void UpdateUser(UserInfo u)
     {
         try
         {
-            if (objuser.FirstName == null || objuser.LastName == null || objuser.Gender == null || objuser.Department == null || objuser.Username == null || objuser.Password == null)
+            objuser.UserId = u.UserId;
+            Service.Edit(user);
+            users = Service.GetUser();
+            NavigationManager.NavigateTo("/viewusers");
+            toastService.ShowSuccess("User Details Updated Successfully!", "Congratulations!");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError(ex.Message, "Failed!");
+        }
+    }
+    private void EditUser(UserInfo u)
+    {
+        try
+        {
+            if (u.FirstName == "" || u.LastName == "" || u.Gender == "" || u.Department == "" || u.Username == "" || u.Password == "")
             {
                 toastService.ShowError("All fields are mandatory!");
             }
             else
             {
-                RegisterUser();
+                UpdateUser(u);
             }
         }
         catch (Exception ex)
@@ -158,37 +195,35 @@
             toastService.ShowError(ex.Message, "Failed!");
         }
     }
-
-    void RegisterUser()
+    private void HandleValidSubmit()
     {
-        try
-        {
-            objuser.UserId = 0;
-            Service.Create(objuser);
-            users = Service.GetUser();
-            toastService.ShowSuccess("User Registered Successfully!", "Congratulations!");
-            Reset();
-        }
-        catch (Exception ex)
-        {
-            toastService.ShowError(ex.Message, "Failed!");
-        }
-    }
 
-    void Reset()
-    {
-        try
-        {
-            objuser.FirstName = string.Empty;
-            objuser.LastName = string.Empty;
-            objuser.Gender = string.Empty;
-            objuser.Department = string.Empty;
-            objuser.Username = string.Empty;
-            objuser.Password = string.Empty;
-        }
-        catch (Exception ex)
-        {
-            toastService.ShowError(ex.Message, "Failed!");
-        }
+        objuser.FirstName = user.FirstName;
+        objuser.LastName = user.LastName;
+        objuser.Gender = user.Gender;
+        objuser.Department = user.Department;
+        objuser.Username = user.Username;
+        objuser.Password = user.Password;
+        EditUser(user);
     }
+    //private void HandleValidSubmit(UserInfo u)
+    //{
+    //    try
+    //    {
+    //        if (u.FirstName == "" || u.LastName == "" || u.Gender == "" || u.Department == "" || u.Username == "" || u.Password == "")
+    //        {
+    //            toastService.ShowError("All fields are mandatory!");
+    //        }
+    //        else
+    //        {
+    //            UpdateUser(u);
+    //            NavigationManager.NavigateTo("/viewusers");
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        toastService.ShowError(ex.Message, "Failed!");
+    //    }
+    //}
+
 }
